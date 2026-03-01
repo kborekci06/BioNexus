@@ -1,5 +1,5 @@
 # 1. TOOLCHAIN & OUTPUT
-PROJECT_NAME     := blinky_app
+PROJECT_NAME     := ss_twr_init
 TARGETS          := nrf52832_xxaa
 OUTPUT_DIRECTORY := _build
 
@@ -14,7 +14,7 @@ SDK_ROOT := $(NRF_SDK_PATH)
 
 # Go up 6 levels to reach 05_CODE, then into the SDK
 ifeq ($(SDK_ROOT),)
-  SDK_ROOT := ../../nRF5_SDK_14.2.0
+  SDK_ROOT := ../../../../../nRF5_SDK_14.2.0
 endif
 
 # Final safety check: if both failed, stop the build
@@ -26,11 +26,11 @@ PROJ_DIR := ..
 
 SRC_FILES += \
   $(PROJ_DIR)/main.c \
-  ../../../boards/boards.c \
+  $(PROJ_DIR)/ss_init_main.c \
+  $(SDK_ROOT)/components/boards/boards.c \
   ../../../deca_driver/deca_device.c \
   ../../../deca_driver/deca_params_init.c \
   ../../../deca_driver/port/port_platform.c \
-  $(SDK_ROOT)/components/boards/boards.c \
   $(SDK_ROOT)/components/toolchain/gcc/gcc_startup_nrf52.S \
   $(SDK_ROOT)/components/toolchain/system_nrf52.c \
   $(SDK_ROOT)/components/libraries/uart/app_uart_fifo.c \
@@ -38,6 +38,8 @@ SRC_FILES += \
   $(SDK_ROOT)/components/libraries/uart/retarget.c \
   $(SDK_ROOT)/components/drivers_nrf/uart/nrf_drv_uart.c \
   $(SDK_ROOT)/components/drivers_nrf/common/nrf_drv_common.c \
+  $(SDK_ROOT)/components/drivers_nrf/spi_master/nrf_drv_spi.c \
+  $(SDK_ROOT)/components/drivers_nrf/gpiote/nrf_drv_gpiote.c \
 
 INC_FOLDERS += \
   $(PROJ_DIR) \
@@ -62,11 +64,14 @@ INC_FOLDERS += \
   $(SDK_ROOT)/components/drivers_nrf/common \
   $(SDK_ROOT)/components/libraries/experimental_log \
   $(SDK_ROOT)/components/libraries/experimental_log/src \
+  $(SDK_ROOT)/components/drivers_nrf/spi_master \
+  $(SDK_ROOT)/components/libraries/timer \
+  $(SDK_ROOT)/components/drivers_nrf/clock \
 
 # 3. FLAGS
 CFLAGS += -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16
-CFLAGS += -O3 -g3 -Wall -Werror
-CFLAGS += -DNRF52832_XXAA -DBOARD_CUSTOM
+CFLAGS += -O3 -g3 -Wall 
+CFLAGS += -DNRF52832_XXAA -DBOARD_CUSTOM -DBOARD_PCA10040
 CFLAGS += -DCONFIG_GPIO_AS_PINRESET   # Reset button
 # Force the compiler to include our custom overrides first
 CFLAGS += -include app_config.h

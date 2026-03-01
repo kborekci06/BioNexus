@@ -11,9 +11,9 @@
  */
 
 #include "sdk_config.h"
-#include "FreeRTOS.h"
-#include "task.h"
-#include "timers.h"
+// #include "FreeRTOS.h"
+// #include "task.h"
+// #include "timers.h"
 #include "bsp.h"
 #include "boards.h"
 #include "nordic_common.h"
@@ -108,6 +108,16 @@ static void led_toggle_timer_callback (void * pvParameter)
 
 #endif   // #ifdef USE_FREERTOS
 
+// void app_error_fault_handler(uint32_t id, uint32_t pc, uint32_t info) {
+//     printf("\r\n[CRITICAL FAULT] ID: %d, PC: %d\r\n", (int)id, (int)pc);
+//     while(1) {}
+// }
+
+// void app_error_handler_bare(uint32_t error_code) {
+//     printf("\r\n[BARE ERROR] Code: 0x%04X\r\n", (unsigned int)error_code);
+//     while(1) {}
+// }
+
 int main(void)
 {
   /* Setup some LEDs for debug Green and Blue on DWM1001-DEV */
@@ -200,7 +210,7 @@ int main(void)
  *    device should have its own antenna delay properly calibrated to get good precision when performing range measurements.
  * 3. This timeout is for complete reception of a frame, i.e. timeout duration must take into account the length of the expected frame. Here the value
  *    is arbitrary but chosen large enough to make sure that there is enough time to receive the complete response frame sent by the responder at the
- *    6.8M data rate used (around 200 µs).
+ *    6.8M data rate used (around 200 ï¿½s).
  * 4. In a real application, for optimum performance within regulatory limits, it may be necessary to set TX pulse bandwidth and TX power, (using
  *    the dwt_configuretxrf API call) to per device calibrated values saved in the target system or the DW1000 OTP memory.
  * 5. The user is referred to DecaRanging ARM application (distributed with EVK1000 product) for additional practical example of usage, and to the
