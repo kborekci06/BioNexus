@@ -61,6 +61,7 @@ INC_FOLDERS += \
 CFLAGS += -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16
 CFLAGS += -O3 -g3 -Wall -Werror
 CFLAGS += -DNRF52832_XXAA -DBOARD_CUSTOM
+CFLAGS += -DCONFIG_GPIO_AS_PINRESET   # Reset button
 # Force the compiler to include our custom overrides first
 CFLAGS += -include app_config.h
 
