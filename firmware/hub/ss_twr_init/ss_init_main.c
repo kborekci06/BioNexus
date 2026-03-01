@@ -26,6 +26,7 @@
 #include "deca_device_api.h"
 #include "deca_regs.h"
 #include "port_platform.h"
+#include "nrf_delay.h"
 
 #define APP_NAME "SS TWR INIT v1.3"
 
@@ -218,7 +219,8 @@ void ss_initiator_task_function (void * pvParameter)
   {
     ss_init_run();
     /* Delay a task for a given number of ticks */
-    vTaskDelay(RNG_DELAY_MS);
+    // vTaskDelay(RNG_DELAY_MS);
+    nrf_delay_ms(RNG_DELAY_MS);
     /* Tasks must be implemented to never return... */
   }
 }

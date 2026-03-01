@@ -51,10 +51,24 @@ int writetospi( uint16 headerLength, const uint8 *headerBuffer, uint32 bodylengt
 decaIrqStatus_t decamutexon(void);
 void decamutexoff(decaIrqStatus_t s);
 
-#if defined(BOARD_DW1001_DEV)
-#define SPI_CS_PIN   17 /**< SPI CS Pin.*/
+// #if defined(BOARD_DW1001_DEV)
+// #define SPI_CS_PIN   17 /**< SPI CS Pin.*/
+// #else
+// #error "Example is not supported on that board."
+// #endif
+
+// Accept our custom board definition and define all hardware pins
+#if defined(BOARD_DW1001_DEV) || defined(BOARD_CUSTOM)
+#define SPI_CS_PIN   17 
+#define DW1000_RST   24 
+#define DW1000_IRQ   19 
 #else
 #error "Example is not supported on that board."
+#endif
+
+// Bulletproof the SPI interrupt priority for the Nordic driver
+#ifndef SPIM1_IRQ_PRIORITY
+#define SPIM1_IRQ_PRIORITY 7
 #endif
 
 #define SPI_INSTANCE  1 /**< SPI instance index. */
