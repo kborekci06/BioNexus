@@ -178,7 +178,7 @@ int ss_init_run(void)
   /* Execute a delay between ranging exchanges. */
   //     deca_sleep(RNG_DELAY_MS);
 
-  //	return(1);
+  	return 0;
 }
 
 /*! ------------------------------------------------------------------------------------------------------------------

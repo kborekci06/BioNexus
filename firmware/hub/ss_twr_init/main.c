@@ -50,6 +50,12 @@ int main(void)
 {
     /* 1. Setup LEDs */
     bsp_board_leds_init();
+    bsp_board_led_on(0); // Turn on LED 0 immediately
+    bsp_board_led_on(1); // Turn on LED 1 immediately
+    bsp_board_led_on(2); // Turn on LED 2 immediately
+  
+    /* 1. Setup LEDs */
+    bsp_board_leds_init();
 
     /* 2. Setup UART */
     uint32_t err_code;
