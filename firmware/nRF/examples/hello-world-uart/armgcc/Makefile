@@ -14,7 +14,7 @@ SDK_ROOT := $(NRF_SDK_PATH)
 
 # Go up 6 levels to reach 05_CODE, then into the SDK
 ifeq ($(SDK_ROOT),)
-  SDK_ROOT := ../../../../../../nRF5_SDK_14.2.0
+  SDK_ROOT := ../../nRF5_SDK_14.2.0
 endif
 
 # Final safety check: if both failed, stop the build
@@ -26,6 +26,10 @@ PROJ_DIR := ..
 
 SRC_FILES += \
   $(PROJ_DIR)/main.c \
+  ../../../boards/boards.c \
+  ../../../deca_driver/deca_device.c \
+  ../../../deca_driver/deca_params_init.c \
+  ../../../deca_driver/port/port_platform.c \
   $(SDK_ROOT)/components/boards/boards.c \
   $(SDK_ROOT)/components/toolchain/gcc/gcc_startup_nrf52.S \
   $(SDK_ROOT)/components/toolchain/system_nrf52.c \
@@ -39,6 +43,8 @@ INC_FOLDERS += \
   $(PROJ_DIR) \
   $(PROJ_DIR)/config \
   ../../../boards \
+  ../../../deca_driver \
+  ../../../deca_driver/port \
   $(SDK_ROOT)/components/toolchain/cmsis/include \
   $(SDK_ROOT)/components/toolchain \
   $(SDK_ROOT)/components/device \
