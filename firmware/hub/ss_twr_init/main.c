@@ -102,7 +102,7 @@ int main(void)
     while (1)
     {
         ss_init_run();
-        nrf_delay_ms(100);
+        nrf_delay_ms(20);
     }
 }
 

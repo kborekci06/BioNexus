@@ -89,10 +89,20 @@ static volatile int rx_count = 0 ; // Successful receive counter
 *
 * @return none
 */
+
+// Flag to ensure header only prints once
+static bool header_printed = false;
+
 int ss_init_run(void)
 {
 
-
+  // ADDED: Header printout for CSV scrubbing
+  if (!header_printed) {
+      printf("\r\n--- BIONEXUS DATA STREAM START ---\r\n");
+      printf("Timestamp_ms, Distance_m, Accel_X, Accel_Y, Accel_Z\r\n");
+      header_printed = true;
+  }
+  
   /* Loop forever initiating ranging exchanges. */
 
 

@@ -157,7 +157,7 @@ void vLIS2_EnableFifoSampling (void)
 	boInterruptEvent = false;
 
   // Enable X,Y,Z sensors and set a default sample rate
-	vTWI_Write(CTRL_REG1, (ODR_10Hz | X_EN | Y_EN | Z_EN));
+	vTWI_Write(CTRL_REG1, (ODR_100Hz | X_EN | Y_EN | Z_EN));
 	
 	// Disable high-pass filtering
 	vTWI_Write(CTRL_REG2, 0);
