@@ -27,12 +27,14 @@
 #include "port_platform.h"
 #include "nrf_delay.h"
 
+
 /* Inter-ranging delay period, in milliseconds. See NOTE 1*/
 #define RNG_DELAY_MS 80
 
 /* Frames used in the ranging process. See NOTE 2,3 below. */
 static uint8 rx_poll_msg[] = {0x41, 0x88, 0, 0xCA, 0xDE, 'W', 'A', 'V', 'E', 0xE0, 0, 0};
-static uint8 tx_resp_msg[] = {0x41, 0x88, 0, 0xCA, 0xDE, 'V', 'E', 'W', 'A', 0xE1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+/* Expanded to 24 bytes: 20 bytes of standard TWR + 2 bytes sine payload + 2 bytes for Hardware CRC */
+static uint8 tx_resp_msg[] = {0x41, 0x88, 0, 0xCA, 0xDE, 'V', 'E', 'W', 'A', 0xE1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 /* Length of the common part of the message (up to and including the function code, see NOTE 3 below). */
 #define ALL_MSG_COMMON_LEN 10
@@ -61,7 +63,7 @@ static uint32 status_reg = 0;
 // Not enough time to write the data so TX timeout extended for nRF operation.
 // Might be able to get away with 800 uSec but would have to test
 // See note 6 at the end of this file
-#define POLL_RX_TO_RESP_TX_DLY_UUS  1100
+#define POLL_RX_TO_RESP_TX_DLY_UUS  3300
 
 /* This is the delay from the end of the frame transmission to the enable of the receiver, as programmed for the DW1000's wait for response feature. */
 #define RESP_TX_TO_FINAL_RX_DLY_UUS 500
@@ -149,13 +151,29 @@ int ss_resp_run(void)
       resp_msg_set_ts(&tx_resp_msg[RESP_MSG_POLL_RX_TS_IDX], poll_rx_ts);
       resp_msg_set_ts(&tx_resp_msg[RESP_MSG_RESP_TX_TS_IDX], resp_tx_ts);
 
+      // ====================================================
+      // BIONEXUS PAYLOAD INJECTION (Triangle Wave)
+      // ====================================================
+      static int16_t simulated_data = 0;
+      static int16_t step = 100; // How fast the wave moves
+
+      simulated_data += step;
+      if (simulated_data >= 1000 || simulated_data <= -1000) {
+          step = -step; // Reverse direction when we hit the peak/valley
+      }
+
+      // Pack the 16-bit integer into the array
+      tx_resp_msg[20] = simulated_data & 0xFF;         // Lower 8 bits
+      tx_resp_msg[21] = (simulated_data >> 8) & 0xFF;  // Upper 8 bits
+      // ====================================================
+
       /* Write and send the response message. See NOTE 9 below. */
       tx_resp_msg[ALL_MSG_SN_IDX] = frame_seq_nb;
       dwt_writetxdata(sizeof(tx_resp_msg), tx_resp_msg, 0); /* Zero offset in TX buffer. See Note 5 below.*/
       dwt_writetxfctrl(sizeof(tx_resp_msg), 0, 1); /* Zero offset in TX buffer, ranging. */
       ret = dwt_starttx(DWT_START_TX_DELAYED);
 
-      //ret = dwt_starttx(DWT_START_TX_IMMEDIATE);
+      // ret = dwt_starttx(DWT_START_TX_IMMEDIATE);
 
       /* If dwt_starttx() returns an error, abandon this ranging exchange and proceed to the next one. */
       if (ret == DWT_SUCCESS)

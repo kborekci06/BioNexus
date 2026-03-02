@@ -68,6 +68,7 @@ INC_FOLDERS += \
   $(SDK_ROOT)/components/libraries/timer \
   $(SDK_ROOT)/components/drivers_nrf/clock \
 
+
 # 3. FLAGS
 CFLAGS += -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16
 CFLAGS += -O3 -g3 -Wall 
@@ -80,7 +81,7 @@ LDFLAGS += -L$(SDK_ROOT)/components/toolchain/gcc
 LDFLAGS += -T$(SDK_ROOT)/components/toolchain/gcc/nrf52_xxaa.ld
 LDFLAGS += -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16
 LDFLAGS += -u _printf_float
-LDFLAGS += -lm # Link math library for double support
+
 
 # 4. BUILD RULES
 INC_PATHS = $(addprefix -I, $(INC_FOLDERS))

@@ -23,7 +23,7 @@ static dwt_config_t config = {
     (129 + 8 - 8)     /* SFD timeout (preamble length + 1 + SFD length - PAC size). RX only. */
 };
 
-#define POLL_TX_TO_RESP_RX_DLY_UUS 100 
+#define POLL_TX_TO_RESP_RX_DLY_UUS 2500
 
 // =================================================================
 // CUSTOM BIONEXUS ERROR HANDLERS

@@ -48,7 +48,7 @@ static uint8 frame_seq_nb = 0;
 
 /* Buffer to store received response message.
 * Its size is adjusted to longest frame that this example code is supposed to handle. */
-#define RX_BUF_LEN 20
+#define RX_BUF_LEN 32
 static uint8 rx_buffer[RX_BUF_LEN];
 
 /* Hold copy of status register state here for reference so that it can be examined at a debug breakpoint. */
@@ -106,7 +106,7 @@ int ss_init_run(void)
   * set by dwt_setrxaftertxdelay() has elapsed. */
   dwt_starttx(DWT_START_TX_IMMEDIATE | DWT_RESPONSE_EXPECTED);
   tx_count++;
-  printf("Transmission # : %d\r\n",tx_count);
+  // printf("Transmission # : %d\r\n",tx_count);
 
 
   /* We assume that the transmission is achieved correctly, poll for reception of a frame or error/timeout. See NOTE 4 below. */
@@ -147,7 +147,7 @@ int ss_init_run(void)
     if (memcmp(rx_buffer, rx_resp_msg, ALL_MSG_COMMON_LEN) == 0)
     {	
       rx_count++;
-      printf("Reception # : %d\r\n",rx_count);
+      // printf("Reception # : %d\r\n",rx_count);
       uint32 poll_tx_ts, resp_rx_ts, poll_rx_ts, resp_tx_ts;
       int32 rtd_init, rtd_resp;
       float clockOffsetRatio ;
@@ -170,32 +170,52 @@ int ss_init_run(void)
       tof = ((rtd_init - rtd_resp * (1.0f - clockOffsetRatio)) / 2.0f) * DWT_TIME_UNITS; // Specifying 1.0f and 2.0f are floats to clear warning 
       // distance = tof * SPEED_OF_LIGHT;
       // printf("Distance : %f\r\n",distance);
-      
+
+      // Calculate raw distance
       distance = tof * SPEED_OF_LIGHT;
+      
       // Add to history array
       dist_history[filter_idx] = distance;
       filter_idx++;
       if (filter_idx >= FILTER_SIZE) {
           filter_idx = 0;
-          filter_filled = 1; // Array is full, average is valid
+          filter_filled = 1; 
       }
 
-      // Only print if we have enough data to average
+      // 1. Calculate smoothed distance (or use raw if filter isn't full yet)
+      double active_dist = filter_filled ? 0 : distance;
       if (filter_filled) {
-          double avg_distance = 0;
-          for(int i=0; i<FILTER_SIZE; i++) {
-              avg_distance += dist_history[i];
-          }
-          avg_distance /= FILTER_SIZE;
-
-          // Print the smoothed distance
-          int dist_whole = (int)avg_distance;
-          int dist_decimal = (int)(avg_distance * 100) % 100;
-          // Handle negative remainders cleanly
-          if(dist_decimal < 0) dist_decimal = -dist_decimal; 
-          
-          printf("Distance : %d.%02d m\r\n", dist_whole, dist_decimal);
+          for(int i=0; i<FILTER_SIZE; i++) active_dist += dist_history[i];
+          active_dist /= FILTER_SIZE;
       }
+
+      int dist_whole = (int)active_dist;
+      int dist_decimal = (int)(active_dist * 100) % 100;
+      if(dist_decimal < 0) dist_decimal = -dist_decimal; 
+
+      // ====================================================
+      // BIONEXUS PAYLOAD EXTRACTION
+      // ====================================================
+      // Unpack the 16-bit Triangle Wave Data
+      int16_t received_data = (int16_t)(rx_buffer[20] | (rx_buffer[21] << 8));
+      
+      // Reconstruct for printing without using floats
+      char data_sign = (received_data < 0) ? '-' : ' ';
+      int data_abs = received_data < 0 ? -received_data : received_data;
+      int data_whole = data_abs / 1000;
+      int data_dec = data_abs % 1000;
+
+      // Generate Timestamp (Approximate based on 100ms superloop)
+      static uint32_t timestamp_ms = 0;
+      timestamp_ms += 100;
+
+      // Print the final CSV format: Time, Distance, Value
+      printf("%lu, %d.%02d, %c%d.%03d\r\n", 
+              timestamp_ms, 
+              dist_whole, dist_decimal, 
+              data_sign, data_whole, data_dec);
+      // ====================================================
+      
     }
   }
   else
