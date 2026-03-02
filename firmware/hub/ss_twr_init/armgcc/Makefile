@@ -79,6 +79,7 @@ CFLAGS += -include app_config.h
 LDFLAGS += -L$(SDK_ROOT)/components/toolchain/gcc
 LDFLAGS += -T$(SDK_ROOT)/components/toolchain/gcc/nrf52_xxaa.ld
 LDFLAGS += -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16
+LDFLAGS += -u _printf_float
 
 # 4. BUILD RULES
 INC_PATHS = $(addprefix -I, $(INC_FOLDERS))

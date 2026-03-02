@@ -20,11 +20,12 @@
 #include "sdk_config.h" 
 #include <stdio.h>
 #include <string.h>
-#include "FreeRTOS.h"
-#include "task.h"
+// #include "FreeRTOS.h"
+// #include "task.h"
 #include "deca_device_api.h"
 #include "deca_regs.h"
 #include "port_platform.h"
+#include "nrf_delay.h"
 
 /* Inter-ranging delay period, in milliseconds. See NOTE 1*/
 #define RNG_DELAY_MS 80
@@ -54,7 +55,7 @@ static uint8 rx_buffer[RX_BUF_LEN];
 static uint32 status_reg = 0;
 
 /* UWB microsecond (uus) to device time unit (dtu, around 15.65 ps) conversion factor.
-* 1 uus = 512 / 499.2 µs and 1 µs = 499.2 * 128 dtu. */
+* 1 uus = 512 / 499.2 ï¿½s and 1 ï¿½s = 499.2 * 128 dtu. */
 #define UUS_TO_DWT_TIME 65536
 
 // Not enough time to write the data so TX timeout extended for nRF operation.
@@ -194,7 +195,7 @@ int ss_resp_run(void)
     dwt_rxreset();
   }
 
-  return(1);		
+  return 0;		
 }
 
 /*! ------------------------------------------------------------------------------------------------------------------
@@ -256,7 +257,7 @@ void ss_responder_task_function (void * pvParameter)
   {
     ss_resp_run();
     /* Delay a task for a given number of ticks */
-    vTaskDelay(RNG_DELAY_MS);
+    nrf_delay_ms(RNG_DELAY_MS);
     /* Tasks must be implemented to never return... */
   }
 }
