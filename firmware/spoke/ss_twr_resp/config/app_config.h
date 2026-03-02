@@ -51,4 +51,11 @@
 #define SPI_DEFAULT_CONFIG_IRQ_PRIORITY 7
 #define SPIM1_IRQ_PRIORITY 7
 
+// ==========================================
+// TWI (I2C) DRIVER CONFIGURATION
+// ==========================================
+#define TWI_ENABLED 1
+#define TWI0_ENABLED 1  // Most DWM1001 examples use TWI instance 0
+#define TWI0_USE_EASYDMA 1
+
 #endif // APP_CONFIG_H

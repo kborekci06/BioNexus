@@ -16,7 +16,7 @@
 #include "TWI.h"
 #include "LIS2DH12.h"
 #include "LIS2DH12registers.h"
-#include "bsp.h"
+// #include "bsp.h"
 #include "boards.h"
 
 // Local variables and constants

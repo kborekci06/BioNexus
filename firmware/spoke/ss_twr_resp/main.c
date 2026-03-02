@@ -6,6 +6,8 @@
 #include "port_platform.h"
 #include "deca_device_api.h"
 #include "deca_regs.h"
+#include "TWI.h"
+#include "LIS2DH12.h"
 
 extern int ss_resp_run(void);
 
@@ -85,16 +87,29 @@ int main(void)
     /* 7. Set SPI to 8MHz clock for fast data transfer */
     port_set_dw1000_fastrate();
 
-    /* 8. Configure DW1000 */
+    /* 8. Initialize the TWI (I2C) interface */
+    vTWI_Init();
+
+    /* 9. Initialize the LIS2DH12 Accelerometer */
+    vLIS2_Init();
+
+    /* 10. Set LIS2DH12 into a standard sampling mode (10Hz, 12-bit resolution */
+    // Use the setup logic found in the example's vTestModeFifo
+    vLIS2_EnableFifoSampling();
+
+    printf("IMU Initialized. IMU Sampling Enabled (10Hz)\r\n");
+
+    /* 11. Configure DW1000 */
     dwt_configure(&config);
 
-    /* 9. Apply default antenna delay values */
+    /* 12. Apply default antenna delay values */
     dwt_setrxantennadelay(RX_ANT_DLY);
     dwt_settxantennadelay(TX_ANT_DLY);
 
-    /* 10. Set expected response delay and timeout */
+    /* 13. Set expected response delay and timeout */
     dwt_setrxaftertxdelay(POLL_TX_TO_RESP_RX_DLY_UUS);
     dwt_setrxtimeout(0); 
+
 
     printf("UWB Radio Configured. Starting Ranging Loop...\r\n");
 

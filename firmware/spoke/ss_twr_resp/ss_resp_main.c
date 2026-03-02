@@ -26,15 +26,17 @@
 #include "deca_regs.h"
 #include "port_platform.h"
 #include "nrf_delay.h"
-
+#include "LIS2DH12.h"
+#include "TWI.h"
+#include "LIS2DH12registers.h"
 
 /* Inter-ranging delay period, in milliseconds. See NOTE 1*/
 #define RNG_DELAY_MS 80
 
 /* Frames used in the ranging process. See NOTE 2,3 below. */
 static uint8 rx_poll_msg[] = {0x41, 0x88, 0, 0xCA, 0xDE, 'W', 'A', 'V', 'E', 0xE0, 0, 0};
-/* Expanded to 24 bytes: 20 bytes of standard TWR + 2 bytes sine payload + 2 bytes for Hardware CRC */
-static uint8 tx_resp_msg[] = {0x41, 0x88, 0, 0xCA, 0xDE, 'V', 'E', 'W', 'A', 0xE1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+/* Expanded to 28 bytes for X, Y, and Z axes */
+static uint8 tx_resp_msg[] = {0x41, 0x88, 0, 0xCA, 0xDE, 'V', 'E', 'W', 'A', 0xE1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 /* Length of the common part of the message (up to and including the function code, see NOTE 3 below). */
 #define ALL_MSG_COMMON_LEN 10
@@ -50,7 +52,7 @@ static uint8 frame_seq_nb = 0;
 
 /* Buffer to store received response message.
 * Its size is adjusted to longest frame that this example code is supposed to handle. */
-#define RX_BUF_LEN 24
+#define RX_BUF_LEN 32
 static uint8 rx_buffer[RX_BUF_LEN];
 
 /* Hold copy of status register state here for reference so that it can be examined at a debug breakpoint. */
@@ -151,21 +153,66 @@ int ss_resp_run(void)
       resp_msg_set_ts(&tx_resp_msg[RESP_MSG_POLL_RX_TS_IDX], poll_rx_ts);
       resp_msg_set_ts(&tx_resp_msg[RESP_MSG_RESP_TX_TS_IDX], resp_tx_ts);
 
-      // ====================================================
-      // BIONEXUS PAYLOAD INJECTION (Triangle Wave)
-      // ====================================================
-      static int16_t simulated_data = 0;
-      static int16_t step = 100; // How fast the wave moves
+      // // ====================================================
+      // // BIONEXUS PAYLOAD INJECTION (Triangle Wave)
+      // // ====================================================
+      // static int16_t simulated_data = 0;
+      // static int16_t step = 100; // How fast the wave moves
 
-      simulated_data += step;
-      if (simulated_data >= 1000 || simulated_data <= -1000) {
-          step = -step; // Reverse direction when we hit the peak/valley
-      }
+      // simulated_data += step;
+      // if (simulated_data >= 1000 || simulated_data <= -1000) {
+      //     step = -step; // Reverse direction when we hit the peak/valley
+      // }
 
-      // Pack the 16-bit integer into the array
-      tx_resp_msg[20] = simulated_data & 0xFF;         // Lower 8 bits
-      tx_resp_msg[21] = (simulated_data >> 8) & 0xFF;  // Upper 8 bits
+      // // Pack the 16-bit integer into the array
+      // tx_resp_msg[20] = simulated_data & 0xFF;         // Lower 8 bits
+      // tx_resp_msg[21] = (simulated_data >> 8) & 0xFF;  // Upper 8 bits
+      // // ====================================================
+
+      // // ====================================================
+      // // BIONEXUS PAYLOAD INJECTION (Real IMU X-Axis)
+      // // ====================================================
+      // uint8_t lo, hi;
+      // int16_t x_raw;
+
+      // // 1. Read the Low and High bytes for the X-Axis
+      // vTWI_Read(OUT_X_LO, &lo);
+      // vTWI_Read(OUT_X_HI, &hi);
+
+      // // 2. Combine into a 16-bit signed integer
+      // // Note: LIS2DH12 is left-justified. In 12-bit mode, we shift right by 4
+      // x_raw = (int16_t)((hi << 8) | lo);
+      // int16_t x_accel = x_raw / 16; // (1 << 4)
+
+      // // 3. Pack into the payload
+      // tx_resp_msg[20] = x_accel & 0xFF;         // Lower 8 bits
+      // tx_resp_msg[21] = (x_accel >> 8) & 0xFF;  // Upper 8 bits
+      // // ====================================================
+
       // ====================================================
+      // BIONEXUS PAYLOAD INJECTION (Full IMU Accel)
+      // ====================================================
+      uint8_t lo, hi;
+      int16_t x_accel, y_accel, z_accel;
+
+      // Read X, Y, and Z (Each 16-bit left-justified, shift by 4 for 12-bit)
+      vTWI_Read(OUT_X_LO, &lo); vTWI_Read(OUT_X_HI, &hi);
+      x_accel = ((int16_t)((hi << 8) | lo)) / 16;
+
+      vTWI_Read(OUT_Y_LO, &lo); vTWI_Read(OUT_Y_HI, &hi);
+      y_accel = ((int16_t)((hi << 8) | lo)) / 16;
+
+      vTWI_Read(OUT_Z_LO, &lo); vTWI_Read(OUT_Z_HI, &hi);
+      z_accel = ((int16_t)((hi << 8) | lo)) / 16;
+
+      // Pack into 2-byte slots starting at index 20
+      tx_resp_msg[20] = x_accel & 0xFF; tx_resp_msg[21] = (x_accel >> 8) & 0xFF;
+      tx_resp_msg[22] = y_accel & 0xFF; tx_resp_msg[23] = (y_accel >> 8) & 0xFF;
+      tx_resp_msg[24] = z_accel & 0xFF; tx_resp_msg[25] = (z_accel >> 8) & 0xFF;
+      
+      /* Ensure the radio sends exactly 28 bytes */
+      dwt_writetxdata(28, tx_resp_msg, 0); 
+      dwt_writetxfctrl(28, 0, 1);
 
       /* Write and send the response message. See NOTE 9 below. */
       tx_resp_msg[ALL_MSG_SN_IDX] = frame_seq_nb;

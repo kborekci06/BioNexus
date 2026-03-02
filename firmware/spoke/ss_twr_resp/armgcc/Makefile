@@ -40,6 +40,9 @@ SRC_FILES += \
   $(SDK_ROOT)/components/drivers_nrf/common/nrf_drv_common.c \
   $(SDK_ROOT)/components/drivers_nrf/spi_master/nrf_drv_spi.c \
   $(SDK_ROOT)/components/drivers_nrf/gpiote/nrf_drv_gpiote.c \
+  $(SDK_ROOT)/components/drivers_nrf/twi_master/nrf_drv_twi.c \
+  ../../LIS2DH12/LIS2DH12.c \
+  ../../TWI/TWI.c 
 
 INC_FOLDERS += \
   $(PROJ_DIR) \
@@ -67,6 +70,10 @@ INC_FOLDERS += \
   $(SDK_ROOT)/components/drivers_nrf/spi_master \
   $(SDK_ROOT)/components/libraries/timer \
   $(SDK_ROOT)/components/drivers_nrf/clock \
+  $(SDK_ROOT)/components/drivers_nrf/gpiote \
+  $(SDK_ROOT)/components/drivers_nrf/twi_master \
+  ../../LIS2DH12 \
+  ../../TWI
 
 
 # 3. FLAGS

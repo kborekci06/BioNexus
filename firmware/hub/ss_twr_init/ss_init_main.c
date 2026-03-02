@@ -193,28 +193,38 @@ int ss_init_run(void)
       int dist_decimal = (int)(active_dist * 100) % 100;
       if(dist_decimal < 0) dist_decimal = -dist_decimal; 
 
-      // ====================================================
-      // BIONEXUS PAYLOAD EXTRACTION
-      // ====================================================
-      // Unpack the 16-bit Triangle Wave Data
-      int16_t received_data = (int16_t)(rx_buffer[20] | (rx_buffer[21] << 8));
+      // // ====================================================
+      // // BIONEXUS PAYLOAD EXTRACTION
+      // // ====================================================
+      // // Unpack the 16-bit Triangle Wave Data
+      // int16_t received_data = (int16_t)(rx_buffer[20] | (rx_buffer[21] << 8));
       
-      // Reconstruct for printing without using floats
-      char data_sign = (received_data < 0) ? '-' : ' ';
-      int data_abs = received_data < 0 ? -received_data : received_data;
-      int data_whole = data_abs / 1000;
-      int data_dec = data_abs % 1000;
+      // // Reconstruct for printing without using floats
+      // char data_sign = (received_data < 0) ? '-' : ' ';
+      // int data_abs = received_data < 0 ? -received_data : received_data;
+      // int data_whole = data_abs / 1000;
+      // int data_dec = data_abs % 1000;
 
       // Generate Timestamp (Approximate based on 100ms superloop)
       static uint32_t timestamp_ms = 0;
       timestamp_ms += 100;
 
-      // Print the final CSV format: Time, Distance, Value
-      printf("%lu, %d.%02d, %c%d.%03d\r\n", 
-              timestamp_ms, 
-              dist_whole, dist_decimal, 
-              data_sign, data_whole, data_dec);
-      // ====================================================
+      // // Print the final CSV format: Time, Distance, Value
+      // printf("%lu, %d.%02d, %c%d.%03d\r\n", 
+      //         timestamp_ms, 
+      //         dist_whole, dist_decimal, 
+      //         data_sign, data_whole, data_dec);
+      // // ====================================================
+
+      // Unpack X, Y, and Z
+      int16_t x_raw = (int16_t)(rx_buffer[20] | (rx_buffer[21] << 8));
+      int16_t y_raw = (int16_t)(rx_buffer[22] | (rx_buffer[23] << 8));
+      int16_t z_raw = (int16_t)(rx_buffer[24] | (rx_buffer[25] << 8));
+
+      // Print CSV: Time, Dist, X, Y, Z
+      printf("%lu, %d.%02d, %d, %d, %d\r\n", 
+              timestamp_ms, dist_whole, dist_decimal, 
+              x_raw, y_raw, z_raw);
       
     }
   }
