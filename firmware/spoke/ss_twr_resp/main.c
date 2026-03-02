@@ -94,7 +94,7 @@ int main(void)
 
     /* 10. Set expected response delay and timeout */
     dwt_setrxaftertxdelay(POLL_TX_TO_RESP_RX_DLY_UUS);
-    dwt_setrxtimeout(65000); 
+    dwt_setrxtimeout(0); 
 
     printf("UWB Radio Configured. Starting Ranging Loop...\r\n");
 

@@ -65,6 +65,12 @@ static uint32 status_reg = 0;
 static double tof;
 static double distance;
 
+/* Simple Moving Average Filter */
+#define FILTER_SIZE 10
+static double dist_history[FILTER_SIZE] = {0};
+static int filter_idx = 0;
+static int filter_filled = 0;
+
 /* Declaration of static functions. */
 static void resp_msg_get_ts(uint8 *ts_field, uint32 *ts);
 
@@ -162,8 +168,34 @@ int ss_init_run(void)
       rtd_resp = resp_tx_ts - poll_rx_ts;
 
       tof = ((rtd_init - rtd_resp * (1.0f - clockOffsetRatio)) / 2.0f) * DWT_TIME_UNITS; // Specifying 1.0f and 2.0f are floats to clear warning 
+      // distance = tof * SPEED_OF_LIGHT;
+      // printf("Distance : %f\r\n",distance);
+      
       distance = tof * SPEED_OF_LIGHT;
-      printf("Distance : %f\r\n",distance);
+      // Add to history array
+      dist_history[filter_idx] = distance;
+      filter_idx++;
+      if (filter_idx >= FILTER_SIZE) {
+          filter_idx = 0;
+          filter_filled = 1; // Array is full, average is valid
+      }
+
+      // Only print if we have enough data to average
+      if (filter_filled) {
+          double avg_distance = 0;
+          for(int i=0; i<FILTER_SIZE; i++) {
+              avg_distance += dist_history[i];
+          }
+          avg_distance /= FILTER_SIZE;
+
+          // Print the smoothed distance
+          int dist_whole = (int)avg_distance;
+          int dist_decimal = (int)(avg_distance * 100) % 100;
+          // Handle negative remainders cleanly
+          if(dist_decimal < 0) dist_decimal = -dist_decimal; 
+          
+          printf("Distance : %d.%02d m\r\n", dist_whole, dist_decimal);
+      }
     }
   }
   else
