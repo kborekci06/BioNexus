@@ -20,7 +20,7 @@ try:
     # PLOT 1: The BioNexus Telemetry Payload
     # ==========================================
     ax1.plot(df['Time_s'], df['Simulated_Data'], color='tab:blue', linewidth=2)
-    ax1.set_title('BioNexus Payload: Simulated Telemetry', fontsize=14, fontweight='bold')
+    ax1.set_title('Simulated Triangle Wave Telemetry', fontsize=14, fontweight='bold')
     ax1.set_ylabel('Amplitude', fontsize=12)
     ax1.grid(True, linestyle='--', alpha=0.7)
     
