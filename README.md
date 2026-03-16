@@ -1,2 +1,2 @@
 # BioNexus
-Master Modular Embedded Medical Device Project
+Modular Embedded Medical Device Project
